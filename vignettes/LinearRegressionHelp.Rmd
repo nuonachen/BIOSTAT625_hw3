@@ -1,0 +1,75 @@
+---
+title: "Linear Regression Tutorial"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Linear Regression Tutorial}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+1. Perform simple linear regression  
+Data is one of the built-in dataset in R called "cars". In this example, we use "speed" as the independent variable and "dist" as the dependent variable. We want to build a model that uses the speed data to predict travel distances. 
+
+1.1 Use the "Linear Regression" package
+```{r setup}
+library(LinearRegression)
+library(tidyverse)
+data(cars)
+x = as.matrix(cars["speed"])
+y = as.matrix(cars["dist"])
+summary_table(x, y)
+```
+
+
+1.2 Use lm()
+```{r}
+lm_model = lm(y~x)
+summary(lm_model)
+```
+
+1.3 Comparison of two methods in terms of accuracy and efficiency 
+```{r}
+library(bench)
+all.equal(fit_linear_regression(x, y), as.vector(lm_model$coefficients))
+bench::mark(fit_linear_regression(x, y),
+            as.vector(lm_model$coefficients))
+```
+```{r}
+all.equal(get_fitted_values(x, y), as.vector(lm_model$fitted.values))
+bench::mark(get_fitted_values(x, y),
+            as.vector(lm_model$fitted.values))
+```
+
+```{r}
+all.equal(as.vector(get_residual(x, y)), as.vector(lm_model$residuals))
+bench::mark(as.vector(get_residual(x, y)),
+            as.vector(lm_model$residuals))
+```
+
+```{r}
+all.equal(as.vector(get_residual_std_error(x, y)), as.vector(sigma(lm_model)))
+bench::mark(as.vector(get_residual_std_error(x, y)),
+            as.vector(sigma(lm_model)))
+```
+
+```{r}
+all.equal(get_mult_Rsquared(x, y), summary(lm(speed~dist, cars))$r.squared)
+bench::mark(get_mult_Rsquared(x, y), summary(lm(speed~dist, cars))$r.squared)
+```
+
+```{r}
+all.equal(get_adjusted_Rsquared(x, y), summary(lm(speed~dist, cars))$adj.r.squared)
+bench::mark(get_adjusted_Rsquared(x, y), summary(lm(speed~dist, cars))$adj.r.squared)
+```
+
+```{r}
+all.equal(get_f_stat(x, y), as.numeric(summary(lm_model)$fstatistic[1]))
+bench::mark(get_f_stat(x, y), as.numeric(summary(lm_model)$fstatistic[1]))
+```
+
